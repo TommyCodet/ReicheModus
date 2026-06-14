@@ -9,6 +9,7 @@ import de.reichemodus.listener.CombatListener;
 import de.reichemodus.listener.DeathListener;
 import de.reichemodus.listener.JoinListener;
 import de.reichemodus.listener.QuitListener;
+import de.reichemodus.listener.RespawnListener;
 import de.reichemodus.manager.BananaManager;
 import de.reichemodus.manager.CombatManager;
 import de.reichemodus.manager.ConfigManager;
@@ -136,6 +137,11 @@ public final class ReicheModus extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new DeathListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new RespawnListener(this),
                 this
         );
 
