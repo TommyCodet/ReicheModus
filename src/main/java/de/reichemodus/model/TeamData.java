@@ -13,6 +13,8 @@ public final class TeamData {
     private final String name;
     private final Set<UUID> members;
 
+    private UUID owner;
+
     private boolean alive;
     private boolean eliminated;
     private boolean bananaMissing;
@@ -25,6 +27,7 @@ public final class TeamData {
     public TeamData(String name) {
         this.name = name;
         this.members = new HashSet<>();
+
         this.alive = true;
         this.eliminated = false;
         this.bananaMissing = false;
@@ -36,6 +39,14 @@ public final class TeamData {
 
     public Set<UUID> getMembers() {
         return members;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UUID owner) {
+        this.owner = owner;
     }
 
     public boolean isAlive() {
@@ -107,6 +118,7 @@ public final class TeamData {
     }
 
     public void setBananaLocation(Location location) {
+
         if (location == null) {
             bananaWorld = null;
             bananaX = 0;
@@ -122,6 +134,7 @@ public final class TeamData {
     }
 
     public Location getBananaLocation() {
+
         if (bananaWorld == null) {
             return null;
         }
