@@ -23,23 +23,36 @@ public final class ReicheModus extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
         instance = this;
 
         saveDefaultConfig();
 
         configManager = new ConfigManager(this);
-        teamManager = new TeamManager(this);
+
         lifeManager = new LifeManager(this);
+        teamManager = new TeamManager(this);
+
         combatManager = new CombatManager(this);
         bananaManager = new BananaManager(this);
         gameManager = new GameManager(this);
         scoreboardManager = new ScoreboardManager(this);
+
+        getLogger().info("ReicheModus wurde aktiviert.");
     }
 
     @Override
     public void onDisable() {
-        teamManager.save();
-        lifeManager.save();
+
+        if (teamManager != null) {
+            teamManager.save();
+        }
+
+        if (lifeManager != null) {
+            lifeManager.save();
+        }
+
+        getLogger().info("ReicheModus wurde deaktiviert.");
     }
 
     public static ReicheModus getInstance() {
