@@ -38,21 +38,31 @@ public final class ReicheModus extends JavaPlugin {
         gameManager = new GameManager(this);
         scoreboardManager = new ScoreboardManager(this);
 
-        getLogger().info("ReicheModus wurde aktiviert.");
+        getLogger().info("=================================");
+        getLogger().info("ReicheModus v1.0 aktiviert");
+        getLogger().info("Minecraft: Paper 1.21.11");
+        getLogger().info("Java: 21");
+        getLogger().info("=================================");
     }
 
     @Override
     public void onDisable() {
 
-        if (teamManager != null) {
-            teamManager.save();
+        try {
+
+            if (teamManager != null) {
+                teamManager.save();
+            }
+
+            if (lifeManager != null) {
+                lifeManager.save();
+            }
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
 
-        if (lifeManager != null) {
-            lifeManager.save();
-        }
-
-        getLogger().info("ReicheModus wurde deaktiviert.");
+        getLogger().info("ReicheModus deaktiviert.");
     }
 
     public static ReicheModus getInstance() {
