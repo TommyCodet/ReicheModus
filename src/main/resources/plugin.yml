@@ -2,4 +2,21 @@ name: ReicheModus
 version: 1.0
 main: de.reichemodus.ReicheModus
 api-version: '1.21'
-author: Tommy
+
+commands:
+  reiche:
+    description: Reiche Modus Verwaltung
+
+  team:
+    description: Team Verwaltung
+
+  lives:
+    description: Zeigt verbleibende Leben
+
+  givebanane:
+    description: Gibt eine Team-Banane
+    permission: reiche.admin
+
+permissions:
+  reiche.admin:
+    default: op
