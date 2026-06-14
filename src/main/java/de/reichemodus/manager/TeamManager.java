@@ -3,6 +3,7 @@ package de.reichemodus.manager;
 import de.reichemodus.ReicheModus;
 import de.reichemodus.model.PlayerData;
 import de.reichemodus.model.TeamData;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -23,10 +24,11 @@ public final class TeamManager {
     private final YamlConfiguration configuration;
 
     public TeamManager(ReicheModus plugin) {
+
         this.plugin = plugin;
         this.teams = new ConcurrentHashMap<>();
 
-        File folder = new File(plugin.getDataFolder().getAbsolutePath());
+        File folder = plugin.getDataFolder();
 
         if (!folder.exists()) {
             folder.mkdirs();
@@ -35,62 +37,112 @@ public final class TeamManager {
         this.file = new File(folder, "teams.yml");
 
         try {
+
             if (!file.exists()) {
                 file.createNewFile();
             }
+
         } catch (IOException exception) {
             exception.printStackTrace();
         }
 
-        this.configuration = YamlConfiguration.loadConfiguration(file);
+        this.configuration =
+                YamlConfiguration.loadConfiguration(file);
 
         load();
     }
 
-    public TeamData createTeam(String name) {
-        TeamData team = new TeamData(name);
+    public boolean exists(String teamName) {
+        return teams.containsKey(
+                teamName.toLowerCase()
+        );
+    }
 
-        teams.put(name.toLowerCase(), team);
+    public TeamData createTeam(String teamName, UUID owner) {
+
+        TeamData team =
+                new TeamData(teamName);
+
+        team.setOwner(owner);
+        team.addMember(owner);
+
+        teams.put(
+                teamName.toLowerCase(),
+                team
+        );
+
+        PlayerData playerData =
+                plugin.getLifeManager()
+                        .getOrCreate(owner);
+
+        playerData.setTeamName(teamName);
 
         save();
 
         return team;
     }
 
-    public boolean exists(String name) {
-        return teams.containsKey(name.toLowerCase());
-    }
+    public TeamData getTeam(String teamName) {
 
-    public TeamData getTeam(String name) {
-        return teams.get(name.toLowerCase());
+        if (teamName == null) {
+            return null;
+        }
+
+        return teams.get(
+                teamName.toLowerCase()
+        );
     }
 
     public Collection<TeamData> getTeams() {
         return teams.values();
     }
 
-    public void deleteTeam(String name) {
-        TeamData team = getTeam(name);
+    public TeamData getTeamByPlayer(UUID uuid) {
+
+        PlayerData playerData =
+                plugin.getLifeManager()
+                        .getOrCreate(uuid);
+
+        String teamName =
+                playerData.getTeamName();
+
+        if (teamName == null) {
+            return null;
+        }
+
+        return getTeam(teamName);
+    }
+
+    public String getTeamName(UUID uuid) {
+
+        TeamData team =
+                getTeamByPlayer(uuid);
 
         if (team == null) {
-            return;
+            return null;
         }
 
-        for (UUID uuid : team.getMembers()) {
-            PlayerData playerData =
-                    plugin.getLifeManager().getOrCreate(uuid);
+        return team.getName();
+    }
 
-            playerData.setTeamName(null);
+    public boolean isOwner(UUID uuid) {
+
+        TeamData team =
+                getTeamByPlayer(uuid);
+
+        if (team == null) {
+            return false;
         }
 
-        teams.remove(name.toLowerCase());
-
-        save();
+        return uuid.equals(
+                team.getOwner()
+        );
     }
 
     public boolean addMember(UUID uuid, String teamName) {
 
-        TeamData team = getTeam(teamName);
+        TeamData team =
+                getTeam(teamName);
 
         if (team == null) {
             return false;
@@ -101,9 +153,12 @@ public final class TeamManager {
         team.addMember(uuid);
 
         PlayerData playerData =
-                plugin.getLifeManager().getOrCreate(uuid);
+                plugin.getLifeManager()
+                        .getOrCreate(uuid);
 
-        playerData.setTeamName(team.getName());
+        playerData.setTeamName(
+                team.getName()
+        );
 
         save();
 
@@ -112,46 +167,100 @@ public final class TeamManager {
 
     public void removeMember(UUID uuid) {
 
-        TeamData team = getTeamByPlayer(uuid);
+        TeamData team =
+                getTeamByPlayer(uuid);
 
-        if (team != null) {
-            team.removeMember(uuid);
+        if (team == null) {
+            return;
         }
 
+        team.removeMember(uuid);
+
         PlayerData playerData =
-                plugin.getLifeManager().getOrCreate(uuid);
+                plugin.getLifeManager()
+                        .getOrCreate(uuid);
 
         playerData.setTeamName(null);
+
+        if (uuid.equals(team.getOwner())) {
+
+            if (team.getMembers().isEmpty()) {
+
+                deleteTeam(
+                        team.getName()
+                );
+
+                return;
+            }
+
+            UUID newOwner =
+                    team.getMembers()
+                            .iterator()
+                            .next();
+
+            team.setOwner(newOwner);
+        }
 
         save();
     }
 
-    public TeamData getTeamByPlayer(UUID uuid) {
+    public void deleteTeam(String teamName) {
 
-        String teamName =
-                plugin.getLifeManager()
-                        .getOrCreate(uuid)
-                        .getTeamName();
+        TeamData team =
+                getTeam(teamName);
 
-        if (teamName == null) {
-            return null;
+        if (team == null) {
+            return;
         }
 
-        return getTeam(teamName);
+        for (UUID uuid : team.getMembers()) {
+
+            PlayerData playerData =
+                    plugin.getLifeManager()
+                            .getOrCreate(uuid);
+
+            playerData.setTeamName(null);
+        }
+
+        teams.remove(
+                teamName.toLowerCase()
+        );
+
+        save();
     }
 
     public void load() {
 
         teams.clear();
 
-        if (!configuration.contains("teams")) {
+        ConfigurationSection section =
+                configuration.getConfigurationSection("teams");
+
+        if (section == null) {
             return;
         }
 
-        for (String key :
-                configuration.getConfigurationSection("teams").getKeys(false)) {
+        for (String key : section.getKeys(false)) {
 
-            TeamData team = new TeamData(key);
+            TeamData team =
+                    new TeamData(key);
+
+            String ownerString =
+                    configuration.getString(
+                            "teams." + key + ".owner"
+                    );
+
+            if (ownerString != null) {
+
+                try {
+
+                    team.setOwner(
+                            UUID.fromString(ownerString)
+                    );
+
+                } catch (Exception ignored) {
+                }
+            }
 
             team.setAlive(
                     configuration.getBoolean(
@@ -204,10 +313,21 @@ public final class TeamManager {
                     );
 
             for (String member : members) {
-                team.addMember(UUID.fromString(member));
+
+                try {
+
+                    team.addMember(
+                            UUID.fromString(member)
+                    );
+
+                } catch (Exception ignored) {
+                }
             }
 
-            teams.put(key.toLowerCase(), team);
+            teams.put(
+                    key.toLowerCase(),
+                    team
+            );
         }
     }
 
@@ -219,6 +339,13 @@ public final class TeamManager {
 
             String path =
                     "teams." + team.getName();
+
+            configuration.set(
+                    path + ".owner",
+                    team.getOwner() == null
+                            ? null
+                            : team.getOwner().toString()
+            );
 
             configuration.set(
                     path + ".alive",
@@ -265,7 +392,9 @@ public final class TeamManager {
         }
 
         try {
+
             configuration.save(file);
+
         } catch (IOException exception) {
             exception.printStackTrace();
         }
