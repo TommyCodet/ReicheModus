@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TeamManager {
 
     private final ReicheModus plugin;
-
     private final Map<String, TeamData> teams;
 
     private final File file;
@@ -53,6 +52,11 @@ public final class TeamManager {
     }
 
     public boolean exists(String teamName) {
+
+        if (teamName == null) {
+            return false;
+        }
+
         return teams.containsKey(
                 teamName.toLowerCase()
         );
@@ -95,6 +99,10 @@ public final class TeamManager {
 
     public Collection<TeamData> getTeams() {
         return teams.values();
+    }
+
+    public Collection<String> getTeamNames() {
+        return teams.keySet();
     }
 
     public TeamData getTeamByPlayer(UUID uuid) {
@@ -202,6 +210,32 @@ public final class TeamManager {
         }
 
         save();
+    }
+
+    public boolean kickMember(UUID owner, UUID target) {
+
+        TeamData team =
+                getTeamByPlayer(owner);
+
+        if (team == null) {
+            return false;
+        }
+
+        if (!owner.equals(team.getOwner())) {
+            return false;
+        }
+
+        if (!team.hasMember(target)) {
+            return false;
+        }
+
+        if (owner.equals(target)) {
+            return false;
+        }
+
+        removeMember(target);
+
+        return true;
     }
 
     public void deleteTeam(String teamName) {
@@ -392,9 +426,7 @@ public final class TeamManager {
         }
 
         try {
-
             configuration.save(file);
-
         } catch (IOException exception) {
             exception.printStackTrace();
         }
