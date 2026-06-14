@@ -4,6 +4,11 @@ import de.reichemodus.command.GiveBananaCommand;
 import de.reichemodus.command.LivesCommand;
 import de.reichemodus.command.ReicheCommand;
 import de.reichemodus.command.TeamCommand;
+import de.reichemodus.listener.BananaListener;
+import de.reichemodus.listener.CombatListener;
+import de.reichemodus.listener.DeathListener;
+import de.reichemodus.listener.JoinListener;
+import de.reichemodus.listener.QuitListener;
 import de.reichemodus.manager.BananaManager;
 import de.reichemodus.manager.CombatManager;
 import de.reichemodus.manager.ConfigManager;
@@ -44,6 +49,7 @@ public final class ReicheModus extends JavaPlugin {
         scoreboardManager = new ScoreboardManager(this);
 
         registerCommands();
+        registerListeners();
 
         getLogger().info("=================================");
         getLogger().info("ReicheModus v1.0 aktiviert");
@@ -115,6 +121,34 @@ public final class ReicheModus extends JavaPlugin {
                     new ReicheCommand(this)
             );
         }
+    }
+
+    private void registerListeners() {
+
+        getServer().getPluginManager().registerEvents(
+                new CombatListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new DeathListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new QuitListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new JoinListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new BananaListener(this),
+                this
+        );
     }
 
     public static ReicheModus getInstance() {
