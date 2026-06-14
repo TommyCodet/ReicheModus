@@ -2,14 +2,19 @@ package de.reichemodus.manager;
 
 import de.reichemodus.ReicheModus;
 import de.reichemodus.model.TeamData;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
+
+import java.util.Random;
 
 public final class BananaManager {
 
@@ -17,6 +22,9 @@ public final class BananaManager {
 
     private final NamespacedKey bananaKey;
     private final NamespacedKey teamKey;
+
+    private final Random random;
+    private BukkitTask decayTask;
 
     public BananaManager(ReicheModus plugin) {
 
@@ -27,6 +35,10 @@ public final class BananaManager {
 
         this.teamKey =
                 new NamespacedKey(plugin, "reiche_team");
+
+        this.random = new Random();
+
+        startDecayTask();
     }
 
     public NamespacedKey getBananaKey() {
@@ -250,8 +262,93 @@ public final class BananaManager {
         }
 
         team.setBananaMissing(true);
-        team.setBananaLocation(null);
 
         plugin.getTeamManager().save();
+    }
+
+    private void startDecayTask() {
+
+        decayTask = Bukkit.getScheduler().runTaskTimer(
+                plugin,
+                this::runDecay,
+                plugin.getConfigManager()
+                        .getBananaDecayIntervalTicks(),
+                plugin.getConfigManager()
+                        .getBananaDecayIntervalTicks()
+        );
+    }
+
+    private void runDecay() {
+
+        if (!plugin.getConfigManager()
+                .isBananaDecayEnabled()) {
+            return;
+        }
+
+        for (TeamData team :
+                plugin.getTeamManager().getTeams()) {
+
+            if (!team.isBananaMissing()) {
+                continue;
+            }
+
+            Location center =
+                    team.getBananaLocation();
+
+            if (center == null) {
+                continue;
+            }
+
+            World world =
+                    center.getWorld();
+
+            if (world == null) {
+                continue;
+            }
+
+            int radius =
+                    plugin.getConfigManager()
+                            .getBananaDecayRadius();
+
+            int x =
+                    center.getBlockX()
+                            + random.nextInt(radius * 2 + 1)
+                            - radius;
+
+            int y =
+                    center.getBlockY()
+                            + random.nextInt(15)
+                            - 7;
+
+            int z =
+                    center.getBlockZ()
+                            + random.nextInt(radius * 2 + 1)
+                            - radius;
+
+            if (y < world.getMinHeight()
+                    || y > world.getMaxHeight()) {
+                continue;
+            }
+
+            Block block =
+                    world.getBlockAt(x, y, z);
+
+            if (block.getType().isAir()) {
+                continue;
+            }
+
+            if (block.getType() == Material.BEDROCK) {
+                continue;
+            }
+
+            block.breakNaturally();
+        }
+    }
+
+    public void shutdown() {
+
+        if (decayTask != null) {
+            decayTask.cancel();
+        }
     }
 }
