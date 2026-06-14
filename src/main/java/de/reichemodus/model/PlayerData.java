@@ -5,12 +5,16 @@ import java.util.UUID;
 public final class PlayerData {
 
     private final UUID uniqueId;
+
     private int lives;
     private boolean eliminated;
+    private String teamName;
 
     public PlayerData(UUID uniqueId, int lives) {
         this.uniqueId = uniqueId;
         this.lives = lives;
+        this.teamName = null;
+        this.eliminated = false;
     }
 
     public UUID getUniqueId() {
@@ -31,5 +35,13 @@ public final class PlayerData {
 
     public void setEliminated(boolean eliminated) {
         this.eliminated = eliminated;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 }
