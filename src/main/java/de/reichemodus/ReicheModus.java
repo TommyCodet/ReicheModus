@@ -71,6 +71,10 @@ public final class ReicheModus extends JavaPlugin {
                 lifeManager.save();
             }
 
+            if (scoreboardManager != null) {
+                scoreboardManager.shutdown();
+            }
+
         } catch (Exception exception) {
             exception.printStackTrace();
         }
