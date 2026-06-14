@@ -1,5 +1,9 @@
 package de.reichemodus;
 
+import de.reichemodus.command.GiveBananaCommand;
+import de.reichemodus.command.LivesCommand;
+import de.reichemodus.command.ReicheCommand;
+import de.reichemodus.command.TeamCommand;
 import de.reichemodus.manager.BananaManager;
 import de.reichemodus.manager.CombatManager;
 import de.reichemodus.manager.ConfigManager;
@@ -7,6 +11,7 @@ import de.reichemodus.manager.GameManager;
 import de.reichemodus.manager.LifeManager;
 import de.reichemodus.manager.ScoreboardManager;
 import de.reichemodus.manager.TeamManager;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ReicheModus extends JavaPlugin {
@@ -38,6 +43,8 @@ public final class ReicheModus extends JavaPlugin {
         gameManager = new GameManager(this);
         scoreboardManager = new ScoreboardManager(this);
 
+        registerCommands();
+
         getLogger().info("=================================");
         getLogger().info("ReicheModus v1.0 aktiviert");
         getLogger().info("Minecraft: Paper 1.21.11");
@@ -63,6 +70,51 @@ public final class ReicheModus extends JavaPlugin {
         }
 
         getLogger().info("ReicheModus deaktiviert.");
+    }
+
+    private void registerCommands() {
+
+        TeamCommand teamCommand =
+                new TeamCommand(this);
+
+        PluginCommand team =
+                getCommand("team");
+
+        if (team != null) {
+
+            team.setExecutor(teamCommand);
+            team.setTabCompleter(teamCommand);
+        }
+
+        PluginCommand lives =
+                getCommand("lives");
+
+        if (lives != null) {
+
+            lives.setExecutor(
+                    new LivesCommand(this)
+            );
+        }
+
+        PluginCommand giveBanane =
+                getCommand("givebanane");
+
+        if (giveBanane != null) {
+
+            giveBanane.setExecutor(
+                    new GiveBananaCommand(this)
+            );
+        }
+
+        PluginCommand reiche =
+                getCommand("reiche");
+
+        if (reiche != null) {
+
+            reiche.setExecutor(
+                    new ReicheCommand(this)
+            );
+        }
     }
 
     public static ReicheModus getInstance() {
