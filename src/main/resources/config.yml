@@ -1,4 +1,16 @@
+starting-lives: 3
+
+combat-seconds: 15
+
 banana-decay-enabled: true
 banana-decay-radius: 30
-combat-seconds: 15
-starting-lives: 3
+banana-decay-interval-ticks: 40
+
+scoreboard-enabled: true
+
+broadcasts:
+  game-start: "&aReiche Modus wurde gestartet."
+  game-stop: "&cReiche Modus wurde gestoppt."
+  banana-stolen: "&6🍌 Die Banane von Team %team% wurde gestohlen!"
+  winner: "&6🏆 Team %team% gewinnt Reiche Modus!"
+  combat-log: "&c%player% hat während Combat ausgeloggt."
