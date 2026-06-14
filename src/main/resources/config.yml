@@ -1,0 +1,4 @@
+banana-decay-enabled: true
+banana-decay-radius: 30
+combat-seconds: 15
+starting-lives: 3
