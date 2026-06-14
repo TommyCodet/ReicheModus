@@ -1,0 +1,35 @@
+name: Build ReicheModus
+
+on:
+push:
+branches:
+- main
+- master
+
+pull_request:
+
+jobs:
+build:
+runs-on: ubuntu-latest
+
+```
+steps:
+  - name: Repository auschecken
+    uses: actions/checkout@v4
+
+  - name: Java 21 installieren
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 21
+      cache: maven
+
+  - name: Maven Build
+    run: mvn -B clean package
+
+  - name: Upload JAR
+    uses: actions/upload-artifact@v4
+    with:
+      name: ReicheModus
+      path: target/*.jar
+```
